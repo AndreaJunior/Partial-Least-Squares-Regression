@@ -1,0 +1,55 @@
+---
+title: "PLS_SIMPLS"
+author: "Andrea Jr Carnoli"
+date: "2023-01-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r Function for PLS using SIMPLS}
+V<- matrix(nrow=ncol(X),ncol=ncol(X),NA)
+m.T<- matrix(nrow=nrow(X),ncol=ncol(X),NA)
+
+Y<- scale(Y, scale=F)        #| Center Y
+S<- t(X)%*%Y                 #| Cross-product
+
+for (a in 1:ncol(X)){
+  q<-svd(S)$v[,1]                 #| dominant eigenvector (Y factor weight)
+  r<-S %*% q                      #| X factor weight
+  t<- X * r                       #| Y factor weight
+  t<- scale(t[,a],scale=F)        #| Center t
+  norm.t<- sqrt(t(t) %*% t)       #| Calculate the norm of t
+  for (i in 1: nrow(t)){
+    t[i]<- t[i]/norm.t                    #| Normalize scores
+    r[i]<- r[i]/norm.t                    #| Normalize also the weights
+  }
+  p<- t(X) %*% t                  #| X loadings
+  q<- t(Y) %*% t                  #| Y loadings
+  u<- Y %*% q                     #| Y scores
+  v<-p                            #| Initialize ortoghonal loadings
+  
+  V[,a]<-v
+  m.T[,a]<-t
+  if (a>1){
+  v<- v- V %*%( t(V) %*% p)     #| make v ortoghonal
+  u<- u-m.T %*% ( t(m.T) %*% u) #| make u ortoghonal
+  }
+  for (i in 1:nrow(t)){
+      v[i]<- v[i]/sqrt(t(v) %*% v)        #| normalize ortoghonalized loadings
+
+  }
+  S<- S- (v%*%( t(v) %*% S))
+}
+
+var.X<-diag()
+
+# useless comment
+
+```
+
+
