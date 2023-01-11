@@ -47,6 +47,9 @@ for (a in 1:ncol(X)){
 }
 
 var.X<-diag()
+
+# useless comment
+
 ```
 
 
