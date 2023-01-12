@@ -1,0 +1,50 @@
+---
+title: "PLS_SIMPLS"
+author: "Andrea Jr Carnoli"
+date: "2023-01-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r Function for PLS using SIMPLS}
+data(iris)
+Y<- as.numeric(iris$Species)
+X<- as.matrix(iris[,-ncol(iris)])
+lv=1
+# Matrix initialization----
+Q<- matrix(nrow=ncol(X),ncol=ncol(X),NA)
+R<- matrix(nrow=ncol(X),ncol=ncol(X),NA)
+mT<-matrix(nrow=nrow(X),ncol=ncol(X),NA)
+P<- matrix(nrow=ncol(X),ncol=ncol(X),NA)
+# SIMPLS alghoritm
+Y<- scale(Y, scale=F)                   #| Center Y
+S<- t(X) %*% Y                          #| Cross product X and Y
+for (a in 1: lv){
+  Q[,a]<-svd(S)$u[,1]                       #| Dominant (first) eigenvector
+  R[,a]<-(S %*% Q[,a])[,1]                  #| X block weights of factors
+  mT[,a]<-(X %*% R[,a])                     #| X block scores
+  mT[,a]<-scale(mT[,a],scale=F)             #| Center scores
+  normT<- sqrt(t(mT[,a])%*%mT[,a])          #| Compute norm of T
+  
+  for (i in 1:nrow(mT)){
+  mT[i,a]<- mT[i,a]/normT                   #| Normalize scores
+  }
+  
+  for (j in 1:nrow(R)){
+      R[j,a]<-  R[j,a]/normT                #| Adapt weights
+  }
+  
+  P[,a]<- t()
+  
+  
+  
+  
+
+```
+
+
