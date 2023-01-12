@@ -13,14 +13,17 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r Function for PLS using SIMPLS}
 data(iris)
-Y<- as.numeric(iris$Species)
+Y<- as.matrix(as.numeric(iris$Species))
 X<- as.matrix(iris[,-ncol(iris)])
 lv=1
 # Matrix initialization----
-Q<- matrix(nrow=ncol(X),ncol=ncol(X),NA)
-R<- matrix(nrow=ncol(X),ncol=ncol(X),NA)
-mT<-matrix(nrow=nrow(X),ncol=ncol(X),NA)
-P<- matrix(nrow=ncol(X),ncol=ncol(X),NA)
+Q<- matrix(nrow=ncol(X),ncol=ncol(X),0)
+R<- matrix(nrow=ncol(X),ncol=ncol(X),0)
+mT<-matrix(nrow=nrow(X),ncol=ncol(X),0)
+P<- matrix(nrow=ncol(X),ncol=ncol(X),0)
+U<- matrix(nrow=nrow(X),ncol=ncol(Y),0)
+V<-P
+# Q<- matrix(nrow=ncol(Y),ncol=ncol(Y),NA)
 # SIMPLS alghoritm
 Y<- scale(Y, scale=F)                   #| Center Y
 S<- t(X) %*% Y                          #| Cross product X and Y
@@ -39,7 +42,15 @@ for (a in 1: lv){
       R[j,a]<-  R[j,a]/normT                #| Adapt weights
   }
   
-  P[,a]<- t()
+  P[,a]<- t(X) %*% mT[,a]                   #| X loadings
+  Q[,a]<- t(Y) %*% mT[,a]                   #| Y loadings
+  U[,a]<- (Y %*% Q[,a])[,1]
+  V[,a]<- P[,a]                             #|Initialize orthogonal loadings
+  V[,a]<- V[,a]-V %*% (t(V) %*% P[,a])      #| Make the new loadings ortoghonal
+  U[,a]<- U[,a]-mT %*% (t(mT) %*% U[,a])    #| Make the new loadings ortoghonal
+  V[,a]<-sqrt(t(V[,a]%*% V[,a]))            #| Normalize the ortoghonal loadings
+  S<- S- (V[,a] %*% (t(V) %*% S) )[1]            #| deflate S
+}
   
   
   
