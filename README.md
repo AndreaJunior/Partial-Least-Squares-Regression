@@ -1,1 +1,1 @@
-# PLS project
+# Partial Least Squares Regression
