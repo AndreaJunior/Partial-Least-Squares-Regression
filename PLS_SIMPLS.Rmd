@@ -15,45 +15,43 @@ knitr::opts_chunk$set(echo = TRUE)
 data(iris)
 Y<- as.matrix(as.numeric(iris$Species))
 X<- as.matrix(iris[,-ncol(iris)])
-lv=4
+LV=4
 # Matrix initialization----
-Q<- matrix(nrow=ncol(X),ncol=ncol(X),0)
-R<- matrix(nrow=ncol(X),ncol=ncol(X),0)
-mT<-matrix(nrow=nrow(X),ncol=ncol(X),0)
-P<- matrix(nrow=ncol(X),ncol=ncol(X),0)
-U<- matrix(nrow=nrow(X),ncol=ncol(X),0)
-V<-P
-# Q<- matrix(nrow=ncol(Y),ncol=ncol(Y),NA)
-# SIMPLS alghoritm
-Y<- scale(Y, scale=F)                   #| Center Y
-S<- t(X) %*% Y                          #| Cross product X and Y
-for (a in 1: lv){
-  Q[,a]<-svd(S)$u[,1]                       #| Dominant (first) eigenvector
-  R[,a]<-(S %*% Q[,a])[,1]                  #| X block weights of factors
-  mT[,a]<-(X %*% R[,a])                     #| X block scores
-  mT[,a]<-scale(mT[,a],scale=F)             #| Center scores
-  normT<- sqrt(t(mT[,a])%*%mT[,a])          #| Compute norm of T
+mT<- matrix(nrow=nrow(X),ncol=ncol(X),0)    #| Scores of X
+mP<- matrix(nrow=ncol(X),ncol=LV,0)         #| Loadings of X
+mU<- matrix(nrow=nrow(Y),ncol=LV,0)         #| Scores of Y
+mQ<- matrix(nrow=ncol(Y),ncol=LV,0)         #| Loadings of Y
+mW<- matrix(nrow=ncol(X),ncol=ncol(X),0)    #| svd Vectors of Y
+
+# SIMPLS----
+Y<- scale(Y,scale=F)                                 #| Center Y
+X<- scale(X,scale=F)                                 #| Center X
+mE<- X                                               #| Initialize E as X
+mF<- Y                                               #| Initialize F as Y
+
+for (a in 1:LV){
+  S<- t(mE) %*% mF                                     #| Cross product X,Y
+  svd.S<- svd(S)                                       #| SVD of the cross product
+  mW[,a]<- svd.S$u[,1]                                 #| First left singular vector of S
+  mQ[,a]<- svd.S$v[,1]                                 #| First right singular vector of S
   
-  for (i in 1:nrow(mT)){
-  mT[i,a]<- mT[i,a]/normT                   #| Normalize scores
-  }
+  mT[,a]<- mE %*% mW[,a]                               #| Scores of X
+  mU[,a]<- mF %*% mQ[,a]                               #| Scores of Y
   
-  for (j in 1:nrow(R)){
-      R[j,a]<-  R[j,a]/normT                #| Adapt weights
-  }
+  mT[,a] <- mT[,a]/((sqrt(t(mT[,a]) %*% mT[,a]))[1])  #| Normalization of the score
   
-  P[,a]<- t(X) %*% mT[,a]                   #| X loadings
-  Q[,a]<- t(Y) %*% mT[,a]                   #| Y loadings
-  U[,a]<- (Y %*% Q[,a])[,1]                 #| Y scores
-  V[,a]<- P[,a]                             #|Initialize orthogonal loadings
-  V[,a]<- V[,a]-V %*% (t(V) %*% P[,a])      #| Make the new loadings ortoghonal
-  U[,a]<- U[,a]-mT %*% (t(mT) %*% U[,a])    #| Make the new loadings ortoghonal
-  V[,a]<-sqrt(t(V[,a]%*% V[,a]))            #| Normalize the ortoghonal loadings
-  S<- S- (V[,a] %*% (t(V) %*% S) )[1]       #| deflate S
+  mP[,a] <- t(mE) %*% mT[,a]                          #| X loadings (obtained by regressing data on the scores)
+  mQ[,a] <- t(mF) %*% mT[,a]                          #| X loadings (obtained by regressing data on the scores)
+  
+  mE<- mE- mT[,a] %*% t(mP[,a])                       #| Deflate E
+  mF<- mF- mT[,a] %*% t(mQ[,a])                       #| Deflate F
+
 }
-library(pls)
-model.pls<-plsr(as.numeric(Species)~.,data=iris, method="simpls")  
-  
+
+B<- mW %*% (t(mP %*% mW))^-1
+
+model.pls<- pls::plsr(as.numeric(Species)~., data=iris, method='simpls')
+
 
 ```
 
