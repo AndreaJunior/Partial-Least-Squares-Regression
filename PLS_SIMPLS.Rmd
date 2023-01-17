@@ -46,8 +46,10 @@ for (a in 1:LV){
 R<- mW %*% solve(t(mP) %*% mW)
 B<- R %*% t(mQ)                                       #| Regression coeff
 Y.p<-X%*%B                                            #| Y prediction
+RMS<- sqrt(mean((Y-Y.p)^2))                           #| Root Mean Square Error (RMSE)
 
 model.pls<- pls::plsr(as.numeric(Species)~., data=iris, method='simpls')
+RMSEP(model.pls)
 
 
 ```
