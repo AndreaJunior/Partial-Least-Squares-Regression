@@ -48,6 +48,7 @@ B<- R %*% t(mQ)                                       #| Regression coeff
 Y.p<-X%*%B                                            #| Y prediction
 RMS<- sqrt(mean((Y-Y.p)^2))                           #| Root Mean Square Error (RMSE)
 
+library(pls)
 model.pls<- pls::plsr(as.numeric(Species)~., data=iris, method='simpls')
 RMSEP(model.pls)
 
