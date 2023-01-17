@@ -24,34 +24,28 @@ mQ<- matrix(nrow=ncol(Y),ncol=LV,0)         #| Loadings of Y
 mW<- matrix(nrow=ncol(X),ncol=LV,0)         #| svd Vectors of Y
 
 # SIMPLS----
-Y<- scale(Y,scale=F)                                 #| Center Y
-X<- scale(X,scale=F)                                 #| Center X
-mE<- X                                               #| Initialize E as X
-mF<- Y                                               #| Initialize F as Y
+Y<- scale(Y,scale=F)                                  #| Center Y
+X<- scale(X,scale=F)                                  #| Center X
+mE<- X                                                #| Initialize E as X
+mF<- Y                                                #| Initialize F as Y
 
 for (a in 1:LV){
-  S<- t(mE) %*% mF                                     #| Cross product X,Y
-  svd.S<- svd(S)                                       #| SVD of the cross product
-  mW[,a]<- svd.S$u[,1]                                 #| First left singular vector of S
-  mQ[,a]<- svd.S$v[,1]                                 #| First right singular vector of S
-  
-  mT[,a]<- mE %*% mW[,a]                               #| Scores of X
-  
+  S<- t(mE) %*% mF                                    #| Cross product X,Y
+  svd.S<- svd(S)                                      #| SVD of the cross product
+  mW[,a]<- svd.S$u[,1]                                #| First left singular vector of S
+  mQ[,a]<- svd.S$v[,1]                                #| First right singular vector of S
+  mT[,a]<- mE %*% mW[,a]                              #| Scores of X
   mT[,a] <- mT[,a]/((sqrt(t(mT[,a]) %*% mT[,a]))[1])  #| Normalization of the score
-  
   mP[,a] <- t(mE) %*% mT[,a]                          #| X loadings (obtained by regressing data on the scores)
   mQ[,a] <- t(mF) %*% mT[,a]                          #| Y loadings (obtained by regressing data on the scores)
-    mU[,a]<- mF %*% mQ[,a]                            #| Scores of Y
-
-  
+  mU[,a]<- mF %*% mQ[,a]                              #| Scores of Y
   mE<- mE- mT[,a] %*% t(mP[,a])                       #| Deflate E
   mF<- mF- mT[,a] %*% t(mQ[,a])                       #| Deflate F
-
 }
 
 R<- mW %*% solve(t(mP) %*% mW)
 B<- R %*% t(mQ)                                       #| Regression coeff
-Y.p<-X%*%B
+Y.p<-X%*%B                                            #| Y prediction
 
 model.pls<- pls::plsr(as.numeric(Species)~., data=iris, method='simpls')
 
