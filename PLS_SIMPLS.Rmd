@@ -11,11 +11,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 
-```{r Function for PLS using SIMPLS}
+```{r PLS using SIMPLS}
 data(iris)
-Y<- as.matrix(as.numeric(iris$Species))
-X<- as.matrix(iris[,-ncol(iris)])
-LV=4
+Y<- as.matrix(as.numeric(iris$Species))     #| X
+X<- as.matrix(iris[,-ncol(iris)])           #| Y 
+LV=2                                        #| Number of Latent Variables
+
 # Matrix initialization----
 mT<- matrix(nrow=nrow(X),ncol=ncol(X),0)    #| Scores of X
 mP<- matrix(nrow=ncol(X),ncol=LV,0)         #| Loadings of X
@@ -46,13 +47,9 @@ for (a in 1:LV){
 R<- mW %*% solve(t(mP) %*% mW)
 B<- R %*% t(mQ)                                       #| Regression coeff
 Y.p<-X%*%B                                            #| Y prediction
-RMS<- sqrt(mean((Y-Y.p)^2))                           #| Root Mean Square Error (RMSE)
+RMSE<- sqrt(mean((Y-Y.p)^2))                           #| Root Mean Square Error (RMSE)
 ```
 
-```{r Try the PLS package}
-library(pls)
-model.pls<- pls::plsr(as.numeric(Species)~., data=iris, method='simpls')
-RMSEP(model.pls)
-```
+
 
 
